@@ -9,3 +9,11 @@ scikit-learn>=0.20.1
 scipy>=1.1.0
 tensorflow>=2.0.0
 WTForms>=2.2.1
+kaggle>=1.5.12
+
+# Additional requirements for text preprocessing
+spacy>=3.0.0
+nltk>=3.6.0
+
+# After installing these requirements, you need to run:
+# python -m spacy download en_core_web_sm

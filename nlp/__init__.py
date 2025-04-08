@@ -16,15 +16,16 @@ import os
 def write_default_config(path):
 	w = open(path, 'wt')
 	w.write('[data]\n')
-	w.write('url = https://www.dropbox.com/s/o0nxd8pnwy809u2/headlines.csv?dl=1\n')
-	w.write('file = %s%s%s\n' % (nlp_path, os.path.sep, 'headlines.csv'))
+	w.write('data_dir = %s%s%s%s%s\n' % (os.path.dirname(os.path.dirname(__file__)), os.path.sep, 'nlp', os.path.sep, 'data'))
 	w.close()
 
 # Find NLP_HOME path
 if 'NLP_HOME' in os.environ:
     nlp_path = os.environ['NLP_HOME']
 else:
-    nlp_path = os.environ['HOME'] + os.path.sep + '.nlp' + os.path.sep
+    # Use USERPROFILE on Windows, HOME on Unix
+    home = os.environ.get('USERPROFILE', os.environ.get('HOME', ''))
+    nlp_path = os.path.join(home, '.nlp')
 
 # Make nlp directory if not present
 try:
@@ -33,9 +34,9 @@ except:
     pass
 
 # main config file.
-config_path = nlp_path + 'nlp.cfg'
+config_path = os.path.join(nlp_path, 'nlp.cfg')
 # classifier
-clf_path = nlp_path + 'clf.pkl'
+clf_path = os.path.join(nlp_path, 'clf.pkl')
 
 # write default config if not present.
 if not os.path.isfile(config_path):

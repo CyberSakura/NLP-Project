@@ -5,6 +5,7 @@ import click
 import glob
 import pickle
 import sys
+import os
 
 import numpy as np
 import pandas as pd
@@ -14,8 +15,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score, classification_report
-
+from kaggle.api.kaggle_api_extended import KaggleApi
 from . import clf_path, config
+from .preprocessing import load_data, prepare_dataset
 
 @click.group()
 def main(args=None):
@@ -34,28 +36,52 @@ def web(port):
 @main.command('dl-data')
 def dl_data():
     """
-    Download training/testing data.
+    Download training/testing data from Kaggle.
     """
-    data_url = config.get('data', 'url')
-    data_file = config.get('data', 'file')
-    print('downloading from %s to %s' % (data_url, data_file))
-    r = requests.get(data_url)
-    with open(data_file, 'wt') as f:
-        f.write(r.text)
+    # Initialize the API
+    api = KaggleApi()
+    api.authenticate()
     
+    # Download the dataset
+    dataset = 'emineyetm/fake-news-detection-datasets'
+    print(f'Downloading dataset {dataset} from Kaggle...')
+    
+    # Get the data directory from config
+    data_dir = config.get('data', 'data_dir')
+    
+    # Create data directory if it doesn't exist
+    os.makedirs(data_dir, exist_ok=True)
+    print(f'Data will be downloaded to: {data_dir}')
+    
+    # Download the dataset
+    api.dataset_download_files(
+        dataset,
+        path=data_dir,
+        unzip=True,
+        quiet=False
+    )
+    
+    print(f'Dataset downloaded to {data_dir}')
 
 def data2df():
-    return pd.read_csv(config.get('data', 'file'))
+    """
+    Read the dataset files from the data directory.
+    """
+    data_dir = config.get('data', 'data_dir')
+    fake_df = pd.read_csv(os.path.join(data_dir, 'Fake.csv'))
+    true_df = pd.read_csv(os.path.join(data_dir, 'True.csv'))
+    return fake_df, true_df
 
 @main.command('stats')
 def stats():
     """
     Read the data files and print interesting statistics.
     """
-    df = data2df()
-    print('%d rows' % len(df))
-    print('label counts:')
-    print(df.partisan.value_counts())    
+    fake_df, true_df = data2df()
+    print('Fake news dataset:')
+    print(f'{len(fake_df)} rows')
+    print('\nTrue news dataset:')
+    print(f'{len(true_df)} rows')
 
 @main.command('train')
 def train():
@@ -93,6 +119,41 @@ def top_coef(clf, vec, labels=['liberal', 'conservative'], n=10):
     print('\n\ntop coef for %s' % labels[0])
     for i in np.argsort(clf.coef_[0])[:n]:
         print('%20s\t%.2f' % (feats[i], clf.coef_[0][i]))
+
+@main.command('preprocess')
+def preprocess():
+    """
+    Preprocess the data and split into train/test sets.
+    """
+    # Get data directory from config
+    data_dir = config.get('data', 'data_dir')
+    
+    # Define paths to the datasets
+    fake_path = os.path.join(data_dir, 'News _dataset', 'Fake.csv')
+    true_path = os.path.join(data_dir, 'News _dataset', 'True.csv')
+    
+    print("Loading datasets...")
+    df = load_data(fake_path, true_path)
+    print(f"Total samples: {len(df)}")
+    
+    print("\nPreparing train/test split and preprocessing text...")
+    X_train, X_test, y_train, y_test = prepare_dataset(df)
+    
+    print("\nDataset split complete:")
+    print(f"Training samples: {len(X_train)}")
+    print(f"Testing samples: {len(X_test)}")
+    
+    # Save preprocessed data
+    preprocessed_dir = os.path.join(data_dir, 'preprocessed')
+    os.makedirs(preprocessed_dir, exist_ok=True)
+    
+    # Save train and test sets
+    train_data = pd.concat([X_train, pd.Series(y_train, name='label')], axis=1)
+    test_data = pd.concat([X_test, pd.Series(y_test, name='label')], axis=1)
+    
+    train_data.to_csv(os.path.join(preprocessed_dir, 'train.csv'), index=False)
+    test_data.to_csv(os.path.join(preprocessed_dir, 'test.csv'), index=False)
+    print(f"\nPreprocessed data saved to {preprocessed_dir}")
 
 if __name__ == "__main__":
     sys.exit(main())
