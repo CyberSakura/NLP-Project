@@ -16,16 +16,6 @@ model.eval()  # Set model to evaluation mode
 
 # Function to tokenize and extract features from text
 def extract_features(texts, batch_size=8, chunk_size=1000):
-    """
-    Extract BERT features from text using float16 precision.
-    Using float16 instead of float32 for:
-    1. Reduced memory usage (~50% less)
-    2. Faster processing
-    3. Smaller file sizes
-    4. Still maintains good accuracy for classification tasks
-    
-    This is a common practice in production systems and suitable for our course project.
-    """
     all_embeddings = []
     
     # Process in chunks to save memory
