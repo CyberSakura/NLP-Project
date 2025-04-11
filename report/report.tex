@@ -18,23 +18,23 @@
 \usepackage{graphicx}
 \usepackage{times}
 \usepackage{latexsym}
-\renewcommand{\UrlFont}{\ttfamily\small}
-
 \usepackage{microtype}
+\usepackage{enumitem}
+\renewcommand{\UrlFont}{\ttfamily\small}
 
 \aclfinalcopy % Uncomment this line for the final submission
 
 
 \newcommand\BibTeX{B\textsc{ib}\TeX}
 
-\title{Classifying news articles by partisan lean}
+\title{Fake News Detection and Source Credibility Analysis}
 
-\author{Alice Cooper \\
-  School's Out University / Detriot, MI \\
-  \texttt{email@domain} \\\And
-  Bob Seger \\
-  Night Moves U / Detroit, MI \\
-  \texttt{email@domain} \\}
+\author{Yongbo Chen \\
+  Tulane University / New Orleans, LA \\
+  \texttt{ychen88@tulane.edu} \\\And
+  Nazmun Nahar Khanom \\
+  Tulane University / New Orleans, LA \\
+  \texttt{nkhanom@tulane.edu} \\}
 
 \date{}
 
@@ -45,66 +45,124 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 \end{abstract}
 
 
-\section{Introduction}
+\section{Problem Overview}
 
-This is a skeleton latex document for you to write your report.
+As modern social media technologies advance rapidly, the increasing prevalence of misinformation and fake news has become a significant threat to societal trust and stability. More specifically, due to the lack of sufficient verification methods to filter news content, fake news has spread rapidly through digital platforms, influencing public opinion, political decisions, and public safety with a substantial negative impact.  
 
+However, since news has grown massively in terms of content quantity with its rapid dissemination, relying solely on manual fact-checking is neither practical nor efficient. Therefore, we want to propose a comprehensive fake news detection system leveraging Natural Language Processing (NLP) techniques. Our system integrates text classification, Named Entity Recognition (NER), and stance detection methods to assess and evaluate news articles' reliability systematically.
+
+\section{Data Overview}
+
+At the beginning, we planned to utilize the widely recognized FakeNewsNet dataset \cite{shu2018fakenewsnet, shu2017fake, shu2017exploiting} as our primary source of data for implementing our fake news detection system. However, we observed that FakeNewsNet only contains news titles and URLs, which are sufficient for basic classification tasks but insufficient for conducting more advanced analyses, such as Named Entity Recognition (NER) and stance detection as we planned.
+
+Therefore, we selected an alternative dataset, called the Fake News Detection Datasets \cite{ahmed2018detecting, ahmed2017detection}, publicly available on Kaggle, a widely popular platform for datasets storage and sharing. This dataset encompasses two distinct types of news articles pre-labeled as fake and genuine. In more deails, it consists of two primary CSV files:
+
+\begin{itemize}
+    \item \texttt{True.csv}: Contains more than 12,600 genuine news articles sourced from Reuters.com.
+    \item \texttt{Fake.csv}: Contains more than 12,600 fake news articles gathered from various unreliable platforms.
+\end{itemize}
+
+For our implementation, we programmatically downloaded this dataset through the Kaggle API into our local development environment. Additionally, to facilitate effective model training and evaluation, we divided the dataset into training and testing subsets with an 8:2 split ratio.
+
+\section{Method}
+
+\subsection{Implementation Pipeline}
+
+Our approach involves a multi-step Natural Language Processing (NLP) pipeline including the steps of text preprocessing, feature extraction, classification modeling, and Named Entity Recognition (NER).
+
+\textbf{Text Preprocessing:} We initiate our pipeline with standard preprocessing steps to clean and normalize the textual data. These steps include tokenization, stopword removal, stemming, and lemmatization. Specifically, we use the spaCy library for the tokenization and lemmatization, and the NLTK library for stopword filtering.
+
+\textbf{Feature Extraction:} Our priority chose of model is using the BERT. Considering the original BERT model has already provided powerful deep contextual embeddings, we directly we directly leverage BERT's built-in contextual embeddings by fine-tuning the pre-trained BERT model (\texttt{bert-base-uncased}) available through Hugging Face's Transformers library \cite{DBLP:journals/corr/abs-1810-04805}. However, since one of our evaluation goal is to compare with other base models, so we are still going to apply other feature extraction methods like TF-IDF or traditional word embeddings like Word2Vec during our implementation. 
+
+\textbf{Classification Model:} Our core classification approach centers on fine-tuning the pre-trained BERT transformer specifically tailored to detect fake news. As mentioned above, we utilized the base BERT model (\texttt{bert-base-uncased}) provided by Hugging Face and employ a supervised learning methodology to train the model to accurately classify news articles as either fake or true.
+
+\textbf{Named Entity Recognition (NER):} Initially, our system classifies news articles based solely on textual content. However, to enhance our system's capability in identifying and scrutinizing specific subjects or claims frequently linked to misinformation, we want toincorporate NER techniques to allow us perform extra extraction and analysis of significant entities such as individuals, organizations, and locations for cross-validation against established fact-checking databases. To do so, we specifically employ the pre-trained NER model \texttt{bert-large-cased\allowbreak-finetuned\allowbreak-conll03\allowbreak-english} from Hugging Face's Transformers library \cite{dbmdz_bert_large_cased_conll03}, which is finetuned for NER tasks. Moreover, this model is able to output a list of identified named entities and their corresponding categories so that we can integrate these extracted entities as additional metadata or features, therefore refining and enhancing our classification model through retraining and modification.
+
+\subsection{Evaluation}
+
+After the previous implementation, we want to run several experiments to evaluate our model from several aspects. Therefore, we plan to perform the following experiments as our evaluation:
+
+\textbf{Accuracy Evaluation:}
+For the baseline, we want to know our accuracy in terms of classifying fake news. Therefore, we use the traditional accuracy metric including Accuracy, Precision, Recall and F1-score for our initial accuracy evaluation.
+
+\textbf{Comparison with Baseline Models:}
+Another baseline we want to evaluate is to make a comparison for our model with two other baseline models, Logistic Regression and LSTM, which both are common usage in terms of implementing text classification scenarios.
+To perform the evaluation, we need to adopt another way in order to match the input required for both models (e.g., TF-IDF for logistic regression and Word2Vec for training LSTM model).
+For the evaluation, we want to report the same metrics in terms of the accuracy to make a comparison among different models to tell the efficiency and accuracy to classify fake news.
+
+\textbf{Stance Detection:} 
+Fake news often manipulates the stance of statements, which means they usually twist neutral facts into biased claims or contradicting verified information without directly fabricating quotes. Therefore, we want to know how fake news twists the biased claims from their contents. We want to apply stance detection for our fine-tuned BERT model to provide an additional analysis of semantic insight that enhances interpretation and validation of the model's predictions.
+To do so, we plan to use a pre-trained zero-shot stance detection model named  roberta-large-mnli to help us compare the article's content with our pre-processed claim/reference.
+At last, we will calculate the distribution of stance types for each group (fake or real) and provide a visualization for our analysis result.
+
+
+\section{Intermediate/Preliminary Experiments \& Results}
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
 
 \section{Related Work}
 
-Citations within the text appear in parentheses as~\citep{aho1972theory} or, if the author's name appears in the text itself, as \citet{andrew2007scalable}.
+\textbf{Fake News Detection Using Deep Learning Models} \cite{hu2022deep}
+This paper explores the use of deep learning architectures, particularly CNNs and RNNs for fake news classification. It highlights the effectiveness of word embeddings in capturing linguistic nuances. 
+Compared to their study, our approach will leverage transformer-based models like BERT and extend the classification work by incorporating stance detection into our system.
 
+\textbf{BERT for Fact-Checking and Misinformation Detection} \cite{anggrainingsih2025evaluating}
+This study fine-tunes BERT on fact-checking datasets and shows significant performance gains in identifying false claims. 
+Our work will build on their use of BERT, but we will also extend it by integrating additional features such as sensationalism detection and source credibility analysis for evaluating contextual cues and maintaining the robustness of fake news classification.
 
+\textbf{Stance Detection for Fake News Identification} \cite{li2022brief}
+This research focuses on stance detection to evaluate whether an article supports or contradicts established facts. 
+Our approach will extend this work by combining stance detection with linguistic pattern analysis and NER.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\textbf{Social Context and Fake News Propagation} \cite{chen2025enhancing}
+This paper investigates how fake news spreads on social media, leveraging user interactions and network analysis. 
+While our work will focus on textual credibility analysis, their insights on social media propagation may inform our model extensions.
 
-
-\section{Methods}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-
-
-\section{Results}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-
-Table~\ref{tab:a_table} shows a table. Note that we refer to output generated by \texttt{Experiments.ipynb}. This way, whenever we re-run our notebook, we can regenerate the paper with the latest results.
-
-\begin{table}[ht]
-\centering
-% note that we can refer to tables generated by our Experiments.ipynb notbook.
-\input{../notebooks/table.tex}
-\caption{\label{tab:a_table} A caption. }
-\end{table}
-
-Figure~\ref{fig:a_label} shows a figure
-
-\begin{figure}[ht]
-	\centering
-	% note that we can refer to figures generated by our Experiments.ipynb notbook.
-	\includegraphics[width=3.5in]{../notebooks/results.pdf}
-	\caption{A caption}
-	\label{fig:a_label}
-\end{figure}
-
-\section{Discussion}
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
-
-\section{Conclusion}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-
+\textbf{Hybrid Models for Fake News Classification} \cite{mostafa2024modality}
+This paper presents a hybrid approach combining linguistic analysis, user features, and propagation dynamics. 
+Our model differs by placing greater emphasis on source credibility assessment and stance detection in order to enhance classification through deeper textual understanding rather than propagation signals.
 
 \section{Division of Labor}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 
+\noindent\textbf{Yongbo Chen:}
+\begin{itemize}
+    \item Implementation of text preprocessing and feature extraction pipeline (Pipeline 1 \& 2)
+    \item Development and evaluation of LSTM baseline model (LSTM part of Evaluation 2)
+    \item Integration of stance detection module (Evaluation 3)
+\end{itemize}
 
+\noindent\textbf{Nazmun Nahar Khanom:}
+\begin{itemize}
+    \item Implementation of BERT-based classification model (Pipeline 3)
+    \item Development of NER component (Pipeline 4)
+    \item Implementation and evaluation of Logistic Regression baseline (Evaluation 1)
+\end{itemize}
 
+\section{Timeline}
+
+\begin{itemize}
+    \item \textbf{Week 1 (9-15 April):} 
+          \begin{itemize}
+              \item Implement text preprocessing pipeline
+              \item Develop feature extraction methods
+              \item Set up initial BERT classification model
+          \end{itemize}
+    
+    \item \textbf{Week 2 (16-22 April):} 
+          \begin{itemize}
+              \item Integrate NER component
+              \item Implement stance detection
+              \item Begin baseline model comparisons
+          \end{itemize}
+    
+    \item \textbf{Week 3 (23-29 April):} 
+          \begin{itemize}
+              \item Complete model evaluations
+              \item Analyze and compare results
+              \item Finalize project report
+          \end{itemize}
+\end{itemize}
 
 
 \bibliography{references}
