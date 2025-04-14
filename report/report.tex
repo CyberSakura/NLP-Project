@@ -18,9 +18,10 @@
 \usepackage{graphicx}
 \usepackage{times}
 \usepackage{latexsym}
-\usepackage{microtype}
 \usepackage{enumitem}
 \renewcommand{\UrlFont}{\ttfamily\small}
+
+\usepackage{microtype}
 
 \aclfinalcopy % Uncomment this line for the final submission
 
@@ -40,16 +41,17 @@
 
 \begin{document}
 \maketitle
-\begin{abstract}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-\end{abstract}
+% \begin{abstract}
+% Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+% \end{abstract}
 
 
 \section{Problem Overview}
 
-As modern social media technologies advance rapidly, the increasing prevalence of misinformation and fake news has become a significant threat to societal trust and stability. More specifically, due to the lack of sufficient verification methods to filter news content, fake news has spread rapidly through digital platforms, influencing public opinion, political decisions, and public safety with a substantial negative impact.  
-
-However, since news has grown massively in terms of content quantity with its rapid dissemination, relying solely on manual fact-checking is neither practical nor efficient. Therefore, we want to propose a comprehensive fake news detection system leveraging Natural Language Processing (NLP) techniques. Our system integrates text classification, Named Entity Recognition (NER), and stance detection methods to assess and evaluate news articles' reliability systematically.
+With the rapid advancement of social media, misinformation and fake news increasingly threaten societal trust and stability. 
+Due to inadequate verification methods, fake news spreads quickly across digital platforms, significantly impacting public opinion, political decisions, and public safety. 
+Given the impracticality of manual fact-checking at scale, we propose a comprehensive fake news detection system using Natural Language Processing (NLP) techniques, 
+integrating text classification, Named Entity Recognition (NER), and stance detection to systematically evaluate news reliability.
 
 \section{Data Overview}
 
@@ -70,25 +72,43 @@ For our implementation, we programmatically downloaded this dataset through the 
 
 Our approach involves a multi-step Natural Language Processing (NLP) pipeline including the steps of text preprocessing, feature extraction, classification modeling, and Named Entity Recognition (NER).
 
-\textbf{Text Preprocessing:} We initiate our pipeline with standard preprocessing steps to clean and normalize the textual data. These steps include tokenization, stopword removal, stemming, and lemmatization. Specifically, we use the spaCy library for the tokenization and lemmatization, and the NLTK library for stopword filtering.
+\textbf{Text Preprocessing:} We initiate our pipeline with standard preprocessing steps to clean and normalize the textual data. 
+These steps include tokenization, stopword removal, stemming, and lemmatization. Specifically, we use the spaCy library for the tokenization and lemmatization, 
+and the NLTK library for stopword filtering.
 
-\textbf{Feature Extraction:} Our priority chose of model is using the BERT. Considering the original BERT model has already provided powerful deep contextual embeddings, we directly we directly leverage BERT's built-in contextual embeddings by fine-tuning the pre-trained BERT model (\texttt{bert-base-uncased}) available through Hugging Face's Transformers library \cite{DBLP:journals/corr/abs-1810-04805}. However, since one of our evaluation goal is to compare with other base models, so we are still going to apply other feature extraction methods like TF-IDF or traditional word embeddings like Word2Vec during our implementation. 
+\textbf{Feature Extraction:} Our priority chose of model is using the BERT. Considering the original BERT model has already provided powerful deep contextual embeddings, 
+we directly we directly leverage BERT's built-in contextual embeddings by fine-tuning the pre-trained BERT model (\texttt{bert-base-uncased}) available through Hugging Face's Transformers library \cite{DBLP:journals/corr/abs-1810-04805}. 
+However, since one of our evaluation goal is to compare with other base models, we are still going to apply other feature extraction methods like TF-IDF or traditional word embeddings like Word2Vec during our implementation. 
 
-\textbf{Classification Model:} Our core classification approach centers on fine-tuning the pre-trained BERT transformer specifically tailored to detect fake news. As mentioned above, we utilized the base BERT model (\texttt{bert-base-uncased}) provided by Hugging Face and employ a supervised learning methodology to train the model to accurately classify news articles as either fake or true.
+\textbf{Named Entity Recognition (NER):} Initially, our model was only able to classify news articles as fake or real. To enhance its ability to detect misinformation, we integrated Named Entity Recognition (NER). 
+To perform NER, we used the dbmdz/bert-large-cased-finetuned-conll03-english model from the Hugging Face Transformers library \cite{dbmdz_bert_large_cased_conll03}. This model excels at identifying and categorizing named entities, and the entity counts (e.g., the number of people, organizations, and locations) were added as additional features to our dataset.
 
-\textbf{Named Entity Recognition (NER):} Initially, our system classifies news articles based solely on textual content. However, to enhance our system's capability in identifying and scrutinizing specific subjects or claims frequently linked to misinformation, we want toincorporate NER techniques to allow us perform extra extraction and analysis of significant entities such as individuals, organizations, and locations for cross-validation against established fact-checking databases. To do so, we specifically employ the pre-trained NER model \texttt{bert-large-cased\allowbreak-finetuned\allowbreak-conll03\allowbreak-english} from Hugging Face's Transformers library \cite{dbmdz_bert_large_cased_conll03}, which is finetuned for NER tasks. Moreover, this model is able to output a list of identified named entities and their corresponding categories so that we can integrate these extracted entities as additional metadata or features, therefore refining and enhancing our classification model through retraining and modification.
+\textbf{Classification Model:} Our core classification approach centers on fine-tuning the pre-trained BERT transformer specifically tailored to detect fake news. 
+As mentioned above, we utilized the base BERT model (\texttt{bert-base-uncased}) provided by Hugging Face and employ a supervised learning methodology to fine-tune the model to accurately classify news articles as either fake or true.
 
 \subsection{Evaluation}
-
 After the previous implementation, we want to run several experiments to evaluate our model from several aspects. Therefore, we plan to perform the following experiments as our evaluation:
 
 \textbf{Accuracy Evaluation:}
 For the baseline, we want to know our accuracy in terms of classifying fake news. Therefore, we use the traditional accuracy metric including Accuracy, Precision, Recall and F1-score for our initial accuracy evaluation.
+\begin{itemize}
+    \item \textbf{Accuracy:} The proportion of correctly classified articles (both real and fake).
+    \item \textbf{Precision:} The proportion of fake articles correctly predicted as fake out of all articles predicted as fake.
+    \item \textbf{Recall:} The proportion of fake articles correctly predicted as fake out of all actual fake articles.
+    \item \textbf{F1-score:} The harmonic mean of precision and recall, providing a balanced metric for model performance.
+\end{itemize}
+
+To further evaluate the models, we calculated the ROC-AUC score, which quantifies how well the models distinguish between the positive class (fake) and negative class (real).
+\begin{itemize}
+    \item \textbf{ROC-AUC Score:} The ROC-AUC score quantifies the model's ability to distinguish between the positive class (fake) and negative class (real).
+\end{itemize}
 
 \textbf{Comparison with Baseline Models:}
-Another baseline we want to evaluate is to make a comparison for our model with two other baseline models, Logistic Regression and LSTM, which both are common usage in terms of implementing text classification scenarios.
-To perform the evaluation, we need to adopt another way in order to match the input required for both models (e.g., TF-IDF for logistic regression and Word2Vec for training LSTM model).
-For the evaluation, we want to report the same metrics in terms of the accuracy to make a comparison among different models to tell the efficiency and accuracy to classify fake news.
+To assess the relative performance of the BERT-based models, we compared them with two baseline models commonly used in text classification:
+\begin{itemize}
+    \item \textbf{Logistic Regression with TF-IDF:} This traditional model uses TF-IDF features for text representation. It provides a comparison to our BERT-based models and helps to highlight the advantages of using BERT embeddings for fake news classification.
+    \item \textbf{LSTM (Long Short-Term Memory) with Word2Vec embeddings:} This model uses sequential data processing, and we used Word2Vec embeddings for feature extraction.
+\end{itemize}
 
 \textbf{Stance Detection:} 
 Fake news often manipulates the stance of statements, which means they usually twist neutral facts into biased claims or contradicting verified information without directly fabricating quotes. Therefore, we want to know how fake news twists the biased claims from their contents. We want to apply stance detection for our fine-tuned BERT model to provide an additional analysis of semantic insight that enhances interpretation and validation of the model's predictions.
@@ -98,8 +118,47 @@ At last, we will calculate the distribution of stance types for each group (fake
 
 \section{Intermediate/Preliminary Experiments \& Results}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\subsection{Initial Comparison between BERT-based Model and Baseline Models}
+During the initial stage of our evaluation, our preliminary results includes initial comparison between our BERT-based model and the baseline model: \textbf{Logistic Regression model} and \textbf{LSTM model}. The results are shown in the table \ref{tab:preliminary_results}.
 
+\begin{table}[h]
+    \centering
+    \small
+    \begin{tabular}{lcccc}
+        \toprule
+        Model & Acc. & Prec. & Rec. & F1 \\
+        \midrule
+        LR & 0.96 & 0.96 & 0.96 & 0.96 \\
+        LSTM & 0.73 & 0.72 & 0.78 & 0.75 \\
+        BERT & 0.96 & 0.96 & 0.95 & 0.96 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Preliminary Results (Acc.: Accuracy, Prec.: Precision, Rec.: Recall)}
+    \label{tab:preliminary_results}
+\end{table}
+
+From table \ref{tab:preliminary_results}, both Logistic Regression and BERT-based models have achieved a very high accuracy, precision, recall, and F1-score at about 0.96. However, the LSTM model has a lower accuracy and F1-score compared to the other two models.
+Therefore, this triggered our suspicion that our BERT and Logistic Regression model are overfitting the data. Therefore, at the next stage, we will try to use the cross-validation method to evaluate the performance of our model.
+
+\subsection{ROC-AUC Evaluation}
+We calculated the ROC-AUC score for both models to assess their ability to distinguish between fake and real news articles based on predicted probabilities. The ROC-AUC score for different models are shown in the table \ref{tab:roc_auc_score}.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lc}
+        \toprule
+        Model & ROC-AUC Score \\
+        \midrule
+        LR & 0.96 \\
+        LSTM & 0.79 \\
+        BERT & 0.96 \\
+        \bottomrule
+    \end{tabular}
+    \caption{ROC-AUC Score for Different Models}
+    \label{tab:roc_auc_score}
+\end{table}
+
+From table \ref{tab:roc_auc_score}, we can see a similar result that both Logistic Regression and BERT-based models have achieved a ROC-AUC score of 0.96 and LSTM model only has a ROC-AUC score of 0.79. Therefore, further analysis of overfitting check is needed for the next stage.
 
 \section{Related Work}
 
@@ -126,47 +185,33 @@ Our model differs by placing greater emphasis on source credibility assessment a
 \section{Division of Labor}
 
 \noindent\textbf{Yongbo Chen:}
-\begin{itemize}
+\begin{itemize}[noitemsep,topsep=0pt]
     \item Implementation of text preprocessing and feature extraction pipeline (Pipeline 1 \& 2)
     \item Development and evaluation of LSTM baseline model (LSTM part of Evaluation 2)
     \item Integration of stance detection module (Evaluation 3)
 \end{itemize}
 
 \noindent\textbf{Nazmun Nahar Khanom:}
-\begin{itemize}
+\begin{itemize}[noitemsep,topsep=0pt]
     \item Implementation of BERT-based classification model (Pipeline 3)
-    \item Development of NER component (Pipeline 4)
-    \item Implementation and evaluation of Logistic Regression baseline (Evaluation 1)
+    \item Development of NER component
+    \item Implementation and evaluation of Logistic Regression baseline
 \end{itemize}
 
 \section{Timeline}
 
-\begin{itemize}
-    \item \textbf{Week 1 (9-15 April):} 
-          \begin{itemize}
-              \item Implement text preprocessing pipeline
-              \item Develop feature extraction methods
-              \item Set up initial BERT classification model
-          \end{itemize}
-    
-    \item \textbf{Week 2 (16-22 April):} 
-          \begin{itemize}
-              \item Integrate NER component
-              \item Implement stance detection
-              \item Begin baseline model comparisons
-          \end{itemize}
-    
-    \item \textbf{Week 3 (23-29 April):} 
-          \begin{itemize}
-              \item Complete model evaluations
-              \item Analyze and compare results
-              \item Finalize project report
-          \end{itemize}
-\end{itemize}
+\textbf{Week 1 (9-15 April):} Completed text preprocessing, feature extraction methods, initial BERT classification model setup, and initial accuracy evaluations.
+
+\textbf{Week 2 (16-22 April):} Completed Named Entity Recognition (NER), stance detection, introduced cross-validation to address potential overfitting, and continued baseline comparisons.
+
+\textbf{Week 3 (23-29 April):} Finalize comprehensive evaluations, detailed baseline comparison analysis, and finalize project report.
 
 
-\bibliography{references}
+
+
+
 \bibliographystyle{acl_natbib}
+\bibliography{references}
 
 
 \end{document}
