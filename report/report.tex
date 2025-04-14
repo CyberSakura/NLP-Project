@@ -19,6 +19,7 @@
 \usepackage{times}
 \usepackage{latexsym}
 \usepackage{enumitem}
+\usepackage{subcaption}
 \renewcommand{\UrlFont}{\ttfamily\small}
 
 \usepackage{microtype}
@@ -159,6 +160,34 @@ We calculated the ROC-AUC score for both models to assess their ability to disti
 \end{table}
 
 From table \ref{tab:roc_auc_score}, we can see a similar result that both Logistic Regression and BERT-based models have achieved a ROC-AUC score of 0.96 and LSTM model only has a ROC-AUC score of 0.79. Therefore, further analysis of overfitting check is needed for the next stage.
+
+Besides, we plot the ROC curve for all models to visualize the performance of different models. The ROC curves are shown in Figure \ref{fig:roc_curve}.
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{image/roc_curve_BERT.png}
+      \caption{BERT Model}
+      \label{fig:roc_curve_bert}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{image/roc_curve_BERT_NER.png}
+      \caption{Logistic Regression with NER}
+      \label{fig:roc_curve_bert_ner}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.3\textwidth}
+      \centering
+      \includegraphics[width=\textwidth]{image/roc_curve_lstm.png}
+      \caption{LSTM Model}
+      \label{fig:roc_curve_lstm}
+    \end{subfigure}
+    \caption{Receiver Operating Characteristic (ROC) curves for different models.}
+    \label{fig:roc_curve}
+\end{figure}
 
 \section{Related Work}
 
