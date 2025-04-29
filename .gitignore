@@ -1,0 +1,6 @@
+nlp/data/merged.csv
+nlp/data/News _dataset/
+nlp/data/preprocessed/
+nlp/data/word2vec_features/
+.DS_Store
+*.ipynb
